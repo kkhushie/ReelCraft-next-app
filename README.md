@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# ReelCraft 🎬
 
-First, run the development server:
+A modern full-stack media sharing platform built with Next.js 13. Upload, manage, and share images and videos with AI-powered features.
 
+## ✨ Features
+
+### 🎥 Media Management
+- **Upload images & videos** with drag-and-drop interface
+- **Real-time upload progress** with beautiful animations
+- **File validation** (type, size, dimensions)
+- **AI-powered thumbnail generation**
+- **Adaptive video streaming** (HLS support)
+
+### 🔐 Authentication & Security
+- **NextAuth.js integration** with credential-based login
+- **Secure password hashing** with bcrypt
+- **JWT token management**
+- **Protected routes & middleware**
+
+### 🚀 Performance & UX
+- **Next.js 13 App Router** with React Server Components
+- **Image optimization** with Next.js Image component
+- **TypeScript** for type-safe development
+- **Tailwind CSS** for responsive design
+- **Client-side state management** with React hooks
+
+### 🛠 Tech Stack
+
+**Frontend:**
+- Next.js 13 (App Router)
+- TypeScript
+- Tailwind CSS
+- React Hook Form
+
+**Backend:**
+- Next.js API Routes
+- MongoDB with Mongoose
+- NextAuth.js
+- ImageKit SDK
+
+**Services:**
+- ImageKit (media storage & processing)
+- MongoDB Atlas (database)
+
+## 🏁 Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- MongoDB Atlas account
+- ImageKit account
+
+### Installation
+
+1. **Clone the repository**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+git clone https://github.com/yourusername/reelcraft-next-app.git
+cd reelcraft-next-app
+>>>>>>> bc81e2f2c24f25f8c133dad9996f392ed87b9f4e
