@@ -54,6 +54,6 @@ A modern full-stack media sharing platform built with Next.js 13. Upload, manage
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/reelcraft-next-app.git
+git clone https://github.com/kkhushie/reelcraft-next-app.git
 cd reelcraft-next-app
 >>>>>>> bc81e2f2c24f25f8c133dad9996f392ed87b9f4e
