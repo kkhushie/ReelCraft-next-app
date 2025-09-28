@@ -132,7 +132,7 @@ const Login = () => {
 
                         {/* Social login buttons */}
                         <div className="grid grid-cols-2 gap-4">
-                            <button className="flex items-center justify-center px-4 py-3 border-2 border-zinc-700 rounded-xl hover:border-zinc-600 transition-all duration-300 group" onClick={()=>signIn("google")}>
+                            <button className="flex items-center justify-center px-4 py-3 border-2 border-zinc-700 rounded-xl hover:border-zinc-600 transition-all duration-300 group" onClick={() => signIn("google", { redirect: false  })}>
                                 <div className="w-5 h-5 bg-white rounded mr-2"></div>
                                 <span className="text-zinc-300 font-medium">Google</span>
                             </button>
@@ -146,7 +146,7 @@ const Login = () => {
                     {/* Footer */}
                     <div className="text-center mt-8">
                         <p className="text-zinc-400">
-                            Don't have an account?{" "}
+                            Dont have an account?{" "}
                             <a 
                                 href="/register" 
                                 className="text-white hover:text-zinc-200 font-semibold transition duration-300 hover:underline decoration-2 underline-offset-4"

@@ -1,3 +1,4 @@
+import GoogleProvider from "next-auth/providers/google";
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { dbConnect } from "@/app/lib/db";
@@ -26,7 +27,7 @@ export const authOptions: NextAuthOptions = {
                     if (!user) {
                         throw new Error("No user found with the given email")
                     }
-                    const isValid=await bcrypt.compare(credentials.password, user.password)
+                    const isValid = await bcrypt.compare(credentials.password, user.password)
                     if (!isValid) {
                         throw new Error("Invalid Password")
                     }
@@ -43,28 +44,50 @@ export const authOptions: NextAuthOptions = {
 
 
         }),
+        // ✅ Google Provider
+        GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        }),
+
     ],
     callbacks: {
-        async jwt({ token, user }) {
-            if (user) {
-                token.id = user.id;
+        async signIn({ user, account, profile }) {
+          if (account?.provider === "google") {
+            await dbConnect();
+            const existingUser = await User.findOne({ email: user.email });
+      
+            if (!existingUser) {
+              await User.create({
+                email: user.email,
+                password: null, // since Google user won’t need password
+              });
             }
-            return token;
+          }
+          return true;
         },
+      
+        async jwt({ token, user }) {
+          if (user) {
+            token.id = user.id || token.id;
+          }
+          return token;
+        },
+      
         async session({ session, token }) {
-            if (session.user) {
-                session.user.id = token.id as string;
-            }
-            return session;
-        }
-    },
+          if (session.user) {
+            session.user.id = token.id as string;
+          }
+          return session;
+        },
+      },      
     pages: {
-        signIn:"/login",
-        error:"/login",
+        signIn: "/login",
+        error: "/login",
     },
-    session:{
-        strategy:"jwt",
-        maxAge:30*24*60*60, // 30 days
+    session: {
+        strategy: "jwt",
+        maxAge: 30 * 24 * 60 * 60, // 30 days
     },
-    secret:process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXTAUTH_SECRET,
 }
