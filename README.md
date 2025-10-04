@@ -3,6 +3,8 @@
 
 A modern full-stack media sharing platform built with Next.js 13. Upload, manage, and share images and videos with AI-powered features.
 
+<img width="1864" height="3627" alt="image" src="https://github.com/user-attachments/assets/47feea7c-15c4-4b11-88d2-51fc94142619" />
+
 ## ✨ Features
 
 ### 🎥 Media Management
