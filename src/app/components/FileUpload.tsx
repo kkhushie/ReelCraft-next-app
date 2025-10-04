@@ -1,16 +1,12 @@
 "use client" // This component must be a client component
 
 import {
-    ImageKitAbortError,
-    ImageKitInvalidRequestError,
-    ImageKitServerError,
-    ImageKitUploadNetworkError,
     upload,
 } from "@imagekit/next";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 
 interface FileUploadProps {
-    onSuccess: (res: any) => void
+    onSuccess: (res: unknown) => void
     onProgress?: (progress: number) => void
     fileType?: "image" | "video"
 }
@@ -49,8 +45,9 @@ const FileUpload = ({
 
         try {
             const authRes = await fetch("/api/auth/imagekit-auth")
-            const auth = await authRes.json()
-            const res=await upload({
+            const authJson = await authRes.json()
+            const auth = authJson.authenticationParameters
+            const res = await upload({
                 file,
                 fileName: file.name,
                 publicKey: process.env.NEXT_PUBLIC_PUBLIC_KEY!,
@@ -58,8 +55,8 @@ const FileUpload = ({
                 expire: auth.expire,
                 token: auth.token,
                 onProgress: (event) => {
-                    if(event.lengthComputable && onProgress ){
-                        const percent=(event.loaded/event.total)*100
+                    if (event.lengthComputable && onProgress) {
+                        const percent = (event.loaded / event.total) * 100
                         onProgress(Math.round(percent))
                     }
                 },
@@ -67,10 +64,10 @@ const FileUpload = ({
 
             onSuccess(res)
         }
-        catch(error){
+        catch (error) {
             console.error("Upload Failed:", error)
         }
-        finally{
+        finally {
             setUploading(false)
         }
     }
