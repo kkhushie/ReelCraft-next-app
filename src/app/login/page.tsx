@@ -1,31 +1,54 @@
 "use client"
 import { useRouter } from 'next/navigation'
-import {signIn} from "next-auth/react"
+import { signIn } from "next-auth/react"
 import React, { useState } from 'react'
 
 const Login = () => {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [loading, setLoading] = useState(false)
+    const [loginError, setLoginError] = useState("")
     const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        setLoading(true)
+        setLoginError("")
+
         try {
-           const res=await signIn("credentials",{
-            email,
-            password,
-            redirect:false,
-           })
-           if(res?.error){
-                console.log(res.error)
-           }
-           else{
-            router.push("/")
-           }
-          
-        }
-        catch (error) {
+            const res = await signIn("credentials", {
+                email,
+                password,
+                redirect: false,
+            })
+
+            if (res?.error) {
+                setLoginError(res.error)
+            } else if (res?.ok) {
+                router.push("/")
+            } else {
+                setLoginError("Unexpected error, please try again")
+            }
+        } catch (error) {
             console.error(error)
+            setLoginError("Login failed, please try again")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleSocialLogin = async () => {
+        console.log(`Logging in with Google`)
+        setLoading(true)
+        try {
+            await signIn("google", { callbackUrl: "/dashboard" });
+
+            
+        } catch (error) {
+            console.error(error)
+            setLoginError("Social login failed, please try again")
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -36,10 +59,10 @@ const Login = () => {
                 <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-zinc-800/30 rounded-full blur-3xl animate-pulse"></div>
                 <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-zinc-700/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
             </div>
-            
+
             {/* Grid pattern overlay */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
-            
+
             <div className="relative z-10 flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full">
                     {/* Header */}
@@ -52,19 +75,20 @@ const Login = () => {
                         </h1>
                         <p className="text-zinc-400 text-lg">Sign in to your account</p>
                     </div>
-                    
+
                     {/* Main form container */}
                     <div className="bg-zinc-900/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-zinc-800 p-8 relative">
                         {/* Subtle glow effect */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-zinc-800/10 to-zinc-700/10 rounded-2xl blur-xl"></div>
-                        
+                        {/* <div className="absolute inset-0 bg-gradient-to-r from-zinc-800/10 to-zinc-700/10 rounded-2xl blur-xl"></div> */}
+
                         <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+                            {loginError && <p className="text-red-500 text-sm mb-2">{loginError}</p>}
                             <div className="space-y-1">
                                 <label htmlFor="email" className="block text-sm font-semibold text-zinc-200 mb-3">
                                     Email Address
                                 </label>
                                 <div className="relative group">
-                                    <input 
+                                    <input
                                         id="email"
                                         type="email"
                                         placeholder="Enter your email"
@@ -82,9 +106,9 @@ const Login = () => {
                                     Password
                                 </label>
                                 <div className="relative group">
-                                    <input 
+                                    <input
                                         id="password"
-                                        type="password" 
+                                        type="password"
                                         placeholder="Enter your password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
@@ -98,8 +122,8 @@ const Login = () => {
                             {/* Additional login options */}
                             <div className="flex items-center justify-between text-sm">
                                 <label className="flex items-center space-x-2 text-zinc-400">
-                                    <input 
-                                        type="checkbox" 
+                                    <input
+                                        type="checkbox"
                                         className="w-4 h-4 bg-zinc-800 border-2 border-zinc-600 rounded focus:ring-zinc-500 focus:ring-2"
                                     />
                                     <span>Remember me</span>
@@ -110,11 +134,14 @@ const Login = () => {
                             </div>
 
                             <div className="pt-4">
-                                <button 
+                                <button
                                     type="submit"
+                                    disabled={loading}
                                     className="w-full relative group bg-white hover:bg-zinc-100 text-zinc-900 font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-2xl hover:shadow-white/25"
                                 >
-                                    <span className="relative z-10">Sign In</span>
+                                    <span className="relative z-10">
+                                        {loading ? "Signing in..." : "Sign In"}
+                                    </span>
                                     <div className="absolute inset-0 bg-gradient-to-r from-zinc-100 to-white rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                 </button>
                             </div>
@@ -131,24 +158,33 @@ const Login = () => {
                         </div>
 
                         {/* Social login buttons */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <button className="flex items-center justify-center px-4 py-3 border-2 border-zinc-700 rounded-xl hover:border-zinc-600 transition-all duration-300 group" onClick={() => signIn("google", { redirect: false  })}>
-                                <div className="w-5 h-5 bg-white rounded mr-2"></div>
-                                <span className="text-zinc-300 font-medium">Google</span>
+                        {/* <div className="grid grid-cols-1"> */}
+                            <button
+                                type="button"
+                                className="flex items-center justify-center px-4 py-3 w-full border-2 border-zinc-700 rounded-xl hover:border-zinc-600 transition-all duration-300 group"
+                                onClick={handleSocialLogin}
+                                disabled={loading}
+                            >
+                                {/* <div className="w-5 h-5 bg-white rounded mr-2"></div> */}
+                                <span className="text-zinc-300 font-medium ">Google</span>
                             </button>
-                            <button className="flex items-center justify-center px-4 py-3 border-2 border-zinc-700 rounded-xl hover:border-zinc-600 transition-all duration-300 group" onClick={()=>signIn("github")}>
+                            {/* <button
+                                className="flex items-center justify-center px-4 py-3 border-2 border-zinc-700 rounded-xl hover:border-zinc-600 transition-all duration-300 group"
+                                onClick={() => handleSocialLogin("github")}
+                                disabled={loading}
+                            >
                                 <div className="w-5 h-5 bg-zinc-200 rounded mr-2"></div>
                                 <span className="text-zinc-300 font-medium">GitHub</span>
-                            </button>
-                        </div>
+                            </button> */}
+                        {/* </div> */}
                     </div>
 
                     {/* Footer */}
                     <div className="text-center mt-8">
                         <p className="text-zinc-400">
                             Dont have an account?{" "}
-                            <a 
-                                href="/register" 
+                            <a
+                                href="/register"
                                 className="text-white hover:text-zinc-200 font-semibold transition duration-300 hover:underline decoration-2 underline-offset-4"
                             >
                                 Create one here

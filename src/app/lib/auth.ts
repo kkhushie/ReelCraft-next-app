@@ -6,88 +6,148 @@ import User from "@/app/models/User";
 import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
-    providers: [
-        CredentialsProvider({
-            name: 'Credentials',
-            credentials: {
-                email: { label: "Email", type: "text" },
-                password: { label: "Password", type: "password" }
-            },
+  providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Email and Password are required")
+        }
+        try {
+          await dbConnect();
+          const user = await User.findOne({ email: credentials.email })
+
+          if (!user) {
+            throw new Error("No user found with the given email")
+          }
+          
+          // Check if user has a password (Google users might not have one)
+          if (!user.password) {
+            throw new Error("Please use Google sign-in for this account")
+          }
+          
+          const isValid = await bcrypt.compare(credentials.password, user.password)
+          if (!isValid) {
+            throw new Error("Invalid Password")
+          }
+          return {
+            id: user._id.toString(),
+            email: user.email,
+          }
+        }
+        catch (error) {
+          console.error("Authorize error:", error)
+          throw error
+        }
+      },
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      profile(profile) {
+        console.log("Google profile:", profile);
+        return {
+          id: profile.sub, // This is the Google ID
+          email: profile.email,
+          image: profile.picture,
+        }
+      }
+    }),
+  ],
+  callbacks: {
+    async signIn({ user, account }) {
+      // For credentials provider, just return true
+      if (account?.provider === "credentials") {
+        return true;
+      }
+
+      // For Google provider
+      if (account?.provider === "google") {
+        try {
+          await dbConnect();
+          
+          const googleId = user.id; // This comes from the profile callback above
+          const email = user.email;
+
+          if (!email) {
+            console.error("No email from Google provider");
+            return false;
+          }
 
 
-            async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) {
-                    throw new Error("Email and Password are required")
-                }
-                try {
-                    await dbConnect();
-                    const user = await User.findOne({ email: credentials.email })
+          // Find existing user by email or googleId
+          let existingUser = await User.findOne({
+            $or: [
+              { email: email },
+              { googleId: googleId }
+            ]
+          });
 
 
-                    if (!user) {
-                        throw new Error("No user found with the given email")
-                    }
-                    const isValid = await bcrypt.compare(credentials.password, user.password)
-                    if (!isValid) {
-                        throw new Error("Invalid Password")
-                    }
-                    return {
-                        id: user._id.toString(),
-                        email: user.email,
-                    }
-                }
-                catch (error) {
-                    console.error("Authorize error:", error)
-                    throw error
-                }
-            },
-
-
-        }),
-        // ✅ Google Provider
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-        }),
-
-    ],
-    callbacks: {
-        async signIn({ user, account, profile }) {
-          if (account?.provider === "google") {
-            await dbConnect();
-            const existingUser = await User.findOne({ email: user.email });
-      
-            if (!existingUser) {
-              await User.create({
-                email: user.email,
-                password: null, // since Google user won’t need password
-              });
+          if (existingUser) {
+            // Update googleId if missing
+            if (!existingUser.googleId) {
+              existingUser.googleId = googleId;
+              await existingUser.save();
+              console.log("Updated user with googleId");
             }
+            // Update the user object for JWT callback
+            user.id = existingUser._id;
+            return true;
+          } else {
+            // Create new user
+            const newUser = await User.create({
+              email: email,
+              googleId: googleId,
+              password:"", // No password for Google users
+              });
+
+            user.id = newUser._id;
+            return true;
           }
-          return true;
-        },
-      
-        async jwt({ token, user }) {
-          if (user) {
-            token.id = user.id || token.id;
-          }
-          return token;
-        },
-      
-        async session({ session, token }) {
-          if (session.user) {
-            session.user.id = token.id as string;
-          }
-          return session;
-        },
-      },      
-    pages: {
-        signIn: "/login",
-        error: "/login",
+        } catch (error) {
+          console.error("Google signIn error:", error);
+          return false;
+        }
+      }
+
+      return false;
     },
-    session: {
-        strategy: "jwt",
-        maxAge: 30 * 24 * 60 * 60, // 30 days
+
+    async jwt({ token, user, account }) {
+      // Initial sign in
+      if (user && account) {
+        token.id = user.id;
+        token.provider = account.provider;
+      }
+      
+      // Ensure we have a valid ID
+      if (token.id && typeof token.id !== 'string') {
+        token.id = token.id.toString();
+      }
+      
+      return token;
     },
-    secret: process.env.NEXTAUTH_SECRET,
+
+    async session({ session, token }) {
+      if (session.user && token.id) {
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: "/login",
+    error: "/login",
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development", // Enable debug mode
 }

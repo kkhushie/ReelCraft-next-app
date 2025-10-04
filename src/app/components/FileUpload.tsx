@@ -22,16 +22,30 @@ const FileUpload = ({
 
     //optional validation
 
-    const validateFile = (file: File) => {
+    const validateFile = (file: File): boolean => {
+        setError(null); // Clear previous errors
+        
         if (fileType === "video") {
             if (!file.type.startsWith("video/")) {
                 setError("Please upload a valid video file")
+                return false
             }
             if (file.size > 100 * 1024 * 1024) {
                 setError("Please upload a video file less than 100MB")
+                return false
             }
-            return true
+        } else if (fileType === "image") {
+            if (!file.type.startsWith("image/")) {
+                setError("Please upload a valid image file")
+                return false
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                setError("Please upload an image file less than 10MB")
+                return false
+            }
         }
+        
+        return true
     }
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

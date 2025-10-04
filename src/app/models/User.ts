@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 export interface IUser {
     email: string;
     password: string;
+    googleId: string;
     _id?: mongoose.Types.ObjectId;
     createdAt?: Date;
     updatedAt?: Date;
@@ -19,8 +20,10 @@ const userSchema = new Schema<IUser>(
         },
         password: {
             type: String,
-            required: true,
+            // required: true,
         },
+  googleId: { type: String, unique: true, sparse: true }, // optional, recommended
+
     },
     {
         timestamps: true,
