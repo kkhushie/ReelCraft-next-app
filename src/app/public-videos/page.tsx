@@ -47,11 +47,13 @@ export default function PublicVideosPage() {
     };
     const handleCopy = async (e: React.MouseEvent<HTMLButtonElement>, url: string) => {
         try {
-            // Use currentTarget which is properly typed as HTMLButtonElement
-            e.currentTarget.innerText = "Copied!";
+            // Store the button element reference
+            const button = e.currentTarget;
+            button.innerText = "Copied!";
             await navigator.clipboard.writeText(url);
             setTimeout(() => {
-                e.currentTarget.innerText = "Copy";
+                // Use the stored reference instead of e.currentTarget
+                button.innerText = "Copy";
             }, 5000);
         } catch (err) {
             console.error("Copy failed:", err);
