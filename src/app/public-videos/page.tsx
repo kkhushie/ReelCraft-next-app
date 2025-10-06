@@ -257,7 +257,7 @@ export default function PublicVideosPage() {
                     </div>
                 ) : (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {videos.map((video) => (
+                        {videos && videos.map((video) => (
                             <div
                                 key={video._id}
                                 className="bg-zinc-900/80 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-zinc-800 hover:border-zinc-600 transition-all duration-300 group cursor-pointer"

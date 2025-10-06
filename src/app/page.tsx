@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
+import {IVideo} from "@/app/models/Video"
 
 const HomePage = () => {
     const { data: session, status } = useSession()
@@ -9,9 +10,9 @@ const HomePage = () => {
     const [filter, setFilter] = useState('popular')
     const [showUserMenu, setShowUserMenu] = useState(false)
     const router = useRouter()
-    const [trendingMedia, setTrendingMedia] = useState<unknown[]>([]);
+    const [trendingMedia, setTrendingMedia] = useState<IVideo[]>([]);
     const [loadingTrending, setLoadingTrending] = useState(true);
-    const [selectedVideo, setSelectedVideo] = useState<unknown|null>(null);
+    const [selectedVideo, setSelectedVideo] = useState<IVideo|null>(null);
 
     const isLoggedIn = status === "authenticated"
 
@@ -26,7 +27,7 @@ const HomePage = () => {
             setLoadingTrending(true);
             try {
                 const res = await fetch('/api/video');
-                const data: any[] = await res.json();
+                const data: unknown[] = await res.json();
 
                 let filteredData = data;
 
@@ -52,7 +53,7 @@ const HomePage = () => {
             setCurrentSlide((prev) => (prev + 1) % carouselItems.length)
         }, 4000)
         return () => clearInterval(timer)
-    }, [])
+    }, [carouselItems.length])
 
     const handleGetStarted = () => {
         if (isLoggedIn) {
