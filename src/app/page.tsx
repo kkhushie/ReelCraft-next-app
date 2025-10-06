@@ -27,12 +27,14 @@ const HomePage = () => {
             setLoadingTrending(true);
             try {
                 const res = await fetch('/api/video');
-                const data: unknown[] = await res.json();
+                const data: IVideo[] = await res.json();
 
                 let filteredData = data;
 
                 if (filter === 'latest') {
-                    filteredData = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                    filteredData = data.sort((a, b) => 
+                        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+                    );
                 } else if (filter === 'videos') {
                     filteredData = data.filter((item) => item.videoUrl);
                 }
