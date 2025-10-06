@@ -46,18 +46,17 @@ export default function PublicVideosPage() {
         }
     };
     const handleCopy = async (e: React.MouseEvent<HTMLButtonElement>, url: string) => {
-    try {
-        // Use currentTarget to reliably access the button
-        console.log(e)
-        e.target.innerText = "Copied!";
-        await navigator.clipboard.writeText(url);
-        setTimeout(() => {
-            e.target.innerText = "Copy";
-        }, 5000);
-    } catch (err) {
-        console.error("Copy failed:", err);
-    }
-};
+        try {
+            // Use currentTarget which is properly typed as HTMLButtonElement
+            e.currentTarget.innerText = "Copied!";
+            await navigator.clipboard.writeText(url);
+            setTimeout(() => {
+                e.currentTarget.innerText = "Copy";
+            }, 5000);
+        } catch (err) {
+            console.error("Copy failed:", err);
+        }
+    };
 
     if (loading) {
         return (
@@ -120,8 +119,8 @@ export default function PublicVideosPage() {
 
                         {/* User Menu */}
                         <div className="relative flex gap-5" >
-                            
-                        <button
+
+                            <button
                                 onClick={() => router.push('/')}
                                 className="text-zinc-300 hover:text-white transition-colors font-medium"
                             >
